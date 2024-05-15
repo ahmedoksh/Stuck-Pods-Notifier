@@ -1,0 +1,32 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: manager-role
+rules:
+- apiGroups:
+  - monitor.my.domain
+  resources:
+  - stuckpodsnotifiers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - monitor.my.domain
+  resources:
+  - stuckpodsnotifiers/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - monitor.my.domain
+  resources:
+  - stuckpodsnotifiers/status
+  verbs:
+  - get
+  - patch
+  - update

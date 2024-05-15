@@ -1,0 +1,114 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.14.0
+  name: stuckpodsnotifiers.monitor.my.domain
+spec:
+  group: monitor.my.domain
+  names:
+    kind: StuckPodsNotifier
+    listKind: StuckPodsNotifierList
+    plural: stuckpodsnotifiers
+    singular: stuckpodsnotifier
+  scope: Namespaced
+  versions:
+  - name: v1
+    schema:
+      openAPIV3Schema:
+        description: StuckPodsNotifier is the Schema for the stuckpodsnotifiers API
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: StuckPodsNotifierSpec defines the desired state of StuckPodsNotifier
+            properties:
+              podWaitThreshold:
+                default: 2m
+                description: The time after which a pod is considered stuck
+                format: duration
+                type: string
+              requeueAfter:
+                default: 1m
+                description: How often to check for stuck pods
+                format: duration
+                type: string
+              selector:
+                description: Label selector to select pods to monitor
+                properties:
+                  matchExpressions:
+                    description: matchExpressions is a list of label selector requirements.
+                      The requirements are ANDed.
+                    items:
+                      description: |-
+                        A label selector requirement is a selector that contains values, a key, and an operator that
+                        relates the key and values.
+                      properties:
+                        key:
+                          description: key is the label key that the selector applies
+                            to.
+                          type: string
+                        operator:
+                          description: |-
+                            operator represents a key's relationship to a set of values.
+                            Valid operators are In, NotIn, Exists and DoesNotExist.
+                          type: string
+                        values:
+                          description: |-
+                            values is an array of string values. If the operator is In or NotIn,
+                            the values array must be non-empty. If the operator is Exists or DoesNotExist,
+                            the values array must be empty. This array is replaced during a strategic
+                            merge patch.
+                          items:
+                            type: string
+                          type: array
+                      required:
+                      - key
+                      - operator
+                      type: object
+                    type: array
+                  matchLabels:
+                    additionalProperties:
+                      type: string
+                    description: |-
+                      matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+                      map is equivalent to an element of matchExpressions, whose key field is "key", the
+                      operator is "In", and the values array contains only "value". The requirements are ANDed.
+                    type: object
+                type: object
+                x-kubernetes-map-type: atomic
+              slackChannel:
+                description: Slack channel to send notifications to
+                type: string
+              slackToken:
+                description: Slack token to use for sending notifications
+                type: string
+            required:
+            - selector
+            - slackChannel
+            - slackToken
+            type: object
+          status:
+            description: StuckPodsNotifierStatus defines the observed state of StuckPodsNotifier
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

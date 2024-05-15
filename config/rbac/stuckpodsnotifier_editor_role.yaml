@@ -1,0 +1,27 @@
+# permissions for end users to edit stuckpodsnotifiers.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: stuckpodnotifier
+    app.kubernetes.io/managed-by: kustomize
+  name: stuckpodsnotifier-editor-role
+rules:
+- apiGroups:
+  - monitor.my.domain
+  resources:
+  - stuckpodsnotifiers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - monitor.my.domain
+  resources:
+  - stuckpodsnotifiers/status
+  verbs:
+  - get

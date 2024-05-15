@@ -1,0 +1,9 @@
+apiVersion: monitor.my.domain/v1
+kind: StuckPodsNotifier
+metadata:
+  labels:
+    app.kubernetes.io/name: stuckpodnotifier
+    app.kubernetes.io/managed-by: kustomize
+  name: stuckpodsnotifier-sample
+spec:
+  # Add fields here
