@@ -90,9 +90,17 @@ func (r *StuckPodsNotifierReconciler) Reconcile(ctx context.Context, req ctrl.Re
 
 	slackApi := slack.New(slackToken)
 
+	stuckPodsDetails := []monitorv1.StuckPodDetail{}
+	pendingPodsCount := 0
 	for _, pod := range podList.Items {
+		// Skip pods that are not in Pending state
+		if pod.Status.Phase != corev1.PodPending {
+			continue
+		}
+
+		pendingPodsCount++
 		timeSinceCreation := time.Since(pod.ObjectMeta.CreationTimestamp.Time).Round(time.Second)
-		if pod.Status.Phase == corev1.PodPending && timeSinceCreation >= podWaitThreshold {
+		if timeSinceCreation >= podWaitThreshold {
 			msg := fmt.Sprintf(
 				"Pod *%v* in namespace *%v* hasen't been scheduled for *%v*",
 				pod.Name,
@@ -112,7 +120,27 @@ func (r *StuckPodsNotifierReconciler) Reconcile(ctx context.Context, req ctrl.Re
 			} else {
 				log.Info("Slack message sent successfully:\n\t" + msg)
 			}
+			stuckPodsDetails = append(stuckPodsDetails, monitorv1.StuckPodDetail{
+				Name:         pod.Name,
+				Namespace:    pod.Namespace,
+				CreationTime: pod.ObjectMeta.CreationTimestamp.String(),
+			})
 
+		}
+	}
+
+	// Update the status of the StuckPodsNotifier
+	stuckPodsNotifier.Status.PendingPodsCount = pendingPodsCount
+	stuckPodsNotifier.Status.StuckPodsCount = len(stuckPodsDetails)
+	stuckPodsNotifier.Status.StuckPodsDetails = stuckPodsDetails
+	err = r.Status().Update(ctx, stuckPodsNotifier)
+	if err != nil {
+		if errors.IsConflict(err) {
+			log.Info("Conflict while updating status, retrying")
+			return reconcile.Result{Requeue: true}, nil
+		} else {
+			log.Error(err, "Failed to update status")
+			return reconcile.Result{}, err
 		}
 	}
 

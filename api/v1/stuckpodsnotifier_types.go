@@ -48,10 +48,17 @@ type StuckPodsNotifierSpec struct {
 	PodWaitThreshold string `json:"podWaitThreshold,omitempty"`
 }
 
+type StuckPodDetail struct {
+	Name         string `json:"name"`
+	Namespace    string `json:"namespace"`
+	CreationTime string `json:"creationTime"`
+}
+
 // StuckPodsNotifierStatus defines the observed state of StuckPodsNotifier
 type StuckPodsNotifierStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	PendingPodsCount int              `json:"pendingPodsCount"`
+	StuckPodsCount   int              `json:"stuckPodsCount"`
+	StuckPodsDetails []StuckPodDetail `json:"stuckPodsDetails"`
 }
 
 //+kubebuilder:object:root=true
